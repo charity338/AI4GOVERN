@@ -118,6 +118,8 @@ AI4Govern goes beyond traditional oversight by providing **actionable insights i
 - Support evidence-based governance and oversight decisions  
 
 ---
+You can access the link to the App below;
+https://ai4govern-6jlbbz2oeviw3appjhkscpg.streamlit.app/#risk-by-global-practice 
 
 ### Demo Screenshots
 
