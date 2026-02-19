@@ -9,19 +9,17 @@ st.write("AI-driven risk analytics for procurement oversight")
 uploaded_file = st.file_uploader("Upload Procurement Data (CSV)", type=["csv"])
 
 if uploaded_file:
-
     df = pd.read_csv(uploaded_file)
 
     st.sidebar.header("Dashboard Filters")
 
-practice_filter = st.sidebar.multiselect(
-    "Select Global Practice",
-    options=df["Project Global Practice"].dropna().unique(),
-    default=df["Project Global Practice"].dropna().unique()
-)
+    practice_filter = st.sidebar.multiselect(
+        "Select Global Practice",
+        options=df["Project Global Practice"].dropna().unique(),
+        default=df["Project Global Practice"].dropna().unique()
+    )
 
-df = df[df["Project Global Practice"].isin(practice_filter)]
-
+    df = df[df["Project Global Practice"].isin(practice_filter)]
 
     # Convert date
     df["Contract Signing Date"] = pd.to_datetime(
@@ -60,26 +58,14 @@ df = df[df["Project Global Practice"].isin(practice_filter)]
     # =====================
     # DASHBOARD SECTION
     # =====================
+    st.markdown("## Key Risk Indicators")
 
-  st.markdown("## Key Risk Indicators")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Contracts", f"{len(df):,}")
+    col2.metric("High Risk Contracts", f"{len(df[df['Risk Level']=='High Risk']):,}")
+    col3.metric("Total Financial Exposure (USD)", f"${df['Supplier Contract Amount (USD)'].sum():,.0f}")
 
-col1, col2, col3 = st.columns(3)
-
-col1.metric("Total Contracts", f"{len(df):,}")
-
-col2.metric(
-    "High Risk Contracts",
-    f"{len(df[df['Risk Level']=='High Risk']):,}"
-)
-
-col3.metric(
-    "Total Financial Exposure (USD)",
-    f"${df['Supplier Contract Amount (USD)'].sum():,.0f}"
-)
-
-
-  col1, col2 = st.columns(2)
-
+    col1, col2 = st.columns(2)
     with col1:
         st.subheader("Risk Distribution")
         st.bar_chart(df["Risk Level"].value_counts())
@@ -97,7 +83,6 @@ col3.metric(
     high_risk = df[df["Risk Level"] == "High Risk"].sort_values(
         by="Supplier Contract Amount (USD)", ascending=False
     ).head(10)
-
     st.dataframe(
         high_risk[
             [
