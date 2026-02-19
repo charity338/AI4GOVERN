@@ -107,6 +107,21 @@ Oversight bodies typically rely on manual review and retrospective audits, which
 
 ---
 
+### Demo Screenshots
+
+**Dashboard Metrics & Charts**  
+![(screenshotsdashboardmetrics png)](https://github.com/user-attachments/assets/44926b5a-1afb-4668-ab2b-b1dcda7399a2)
+
+**Risk by Signing Year (Stacked Bar + Color-coded Table)**  
+![Stackbarriskby year](https://github.com/user-attachments/assets/a7681836-576e-4c9e-ba80-26e937d07f6f)
+
+![Risk by Year (screenshotsriskbyyear png)](https://github.com/user-attachments/assets/2d6018f7-955c-40e6-9236-e184db953a97)
+
+**Top 10 High-Risk supplier Contracts**  
+
+![Top 10 High-Risk (screenshotstop10highrisk png)](https://github.com/user-attachments/assets/c66f4a72-5ea1-4e31-8a37-1f8af96d41a9)
+
+
 ## Author
 
 **Murugi**
