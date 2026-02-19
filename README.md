@@ -30,6 +30,18 @@ Oversight bodies typically rely on manual review and retrospective audits, which
 
 ---
 
+## Expected Impact
+
+AI4Govern goes beyond traditional oversight by providing **actionable insights in real-time**, enabling more effective governance of public projects. Specifically, the platform:
+
+- **Uncovers hidden financial and governance risks** before they escalate, helping oversight bodies prioritize interventions.  
+- **Highlights high-risk contracts and suppliers**, allowing early corrective actions to prevent cost overruns, delays, or fraud.  
+- **Tracks risk trends over time**, giving decision-makers a clear picture of which years, sectors, or practices are most vulnerable.  
+- **Supports data-driven decisions**, promoting transparency, accountability, and public trust in procurement processes.  
+- **Empowers policy and project teams** with easy-to-interpret visuals and downloadable reports for swift action.  
+
+---
+
 ## Dataset
 - **Source:** World Bank Contract Awards – Investment Project Financing data for Kenya  
 - **Time Frame:** Fiscal Years 2020 onwards  
