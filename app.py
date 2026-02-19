@@ -12,6 +12,17 @@ if uploaded_file:
 
     df = pd.read_csv(uploaded_file)
 
+    st.sidebar.header("Dashboard Filters")
+
+practice_filter = st.sidebar.multiselect(
+    "Select Global Practice",
+    options=df["Project Global Practice"].dropna().unique(),
+    default=df["Project Global Practice"].dropna().unique()
+)
+
+df = df[df["Project Global Practice"].isin(practice_filter)]
+
+
     # Convert date
     df["Contract Signing Date"] = pd.to_datetime(
         df["Contract Signing Date"], errors="coerce"
@@ -50,7 +61,24 @@ if uploaded_file:
     # DASHBOARD SECTION
     # =====================
 
-    col1, col2 = st.columns(2)
+  st.markdown("## Key Risk Indicators")
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric("Total Contracts", f"{len(df):,}")
+
+col2.metric(
+    "High Risk Contracts",
+    f"{len(df[df['Risk Level']=='High Risk']):,}"
+)
+
+col3.metric(
+    "Total Financial Exposure (USD)",
+    f"${df['Supplier Contract Amount (USD)'].sum():,.0f}"
+)
+
+
+  col1, col2 = st.columns(2)
 
     with col1:
         st.subheader("Risk Distribution")
