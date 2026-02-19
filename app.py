@@ -103,9 +103,9 @@
 #         .fillna(0)
 #     )
 
-
 import streamlit as st
 import pandas as pd
+from io import BytesIO
 
 # =====================
 # PAGE CONFIG
@@ -127,13 +127,11 @@ if uploaded_file:
     # DASHBOARD FILTERS
     # =====================
     st.sidebar.header("Dashboard Filters")
-
     practice_filter = st.sidebar.multiselect(
         "Select Global Practice",
         options=df["Project Global Practice"].dropna().unique(),
         default=df["Project Global Practice"].dropna().unique()
     )
-
     df = df[df["Project Global Practice"].isin(practice_filter)]
 
     # =====================
@@ -165,7 +163,6 @@ if uploaded_file:
             return "Medium Risk"
 
     df["Risk Level"] = df.apply(classify_risk, axis=1)
-
     st.success("Risk analysis completed.")
 
     # =====================
@@ -173,7 +170,6 @@ if uploaded_file:
     # =====================
     st.markdown("## Key Risk Indicators")
     col1, col2, col3 = st.columns(3)
-
     col1.metric("Total Contracts", f"{len(df):,}")
     col2.metric("High Risk Contracts", f"{len(df[df['Risk Level'] == 'High Risk']):,}")
     col3.metric("Total Financial Exposure (USD)", f"${df['Supplier Contract Amount (USD)'].sum():,.0f}")
@@ -185,7 +181,6 @@ if uploaded_file:
     with col1:
         st.subheader("Risk Distribution")
         st.bar_chart(df["Risk Level"].value_counts())
-
     with col2:
         st.subheader("Risk by Global Practice")
         st.bar_chart(
@@ -196,13 +191,12 @@ if uploaded_file:
         )
 
     # =====================
-    # HIGH RISK CONTRACTS TABLE
+    # TOP HIGH-RISK CONTRACTS
     # =====================
     st.subheader("Top 10 High Risk Contracts")
     high_risk = df[df["Risk Level"] == "High Risk"].sort_values(
         by="Supplier Contract Amount (USD)", ascending=False
     ).head(10)
-
     st.dataframe(
         high_risk[
             [
@@ -216,12 +210,40 @@ if uploaded_file:
     )
 
     # =====================
-    # RISK BY YEAR
+    # DOWNLOAD HIGH-RISK CONTRACTS
+    # =====================
+    st.subheader("Download High Risk Contracts")
+    to_download = high_risk[
+        [
+            "Project Name",
+            "Supplier",
+            "Supplier Contract Amount (USD)",
+            "Project Global Practice",
+            "Signing Year",
+            "Risk Level"
+        ]
+    ]
+    csv = to_download.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="Download CSV",
+        data=csv,
+        file_name="high_risk_contracts.csv",
+        mime="text/csv",
+    )
+
+    # =====================
+    # RISK BY YEAR (STACKED BAR + COLOR-CODED TABLE)
     # =====================
     st.subheader("Risk by Signing Year")
-    risk_by_year = df.groupby("Signing Year")["Risk Level"].value_counts().unstack().fillna(0)
 
-    # Color-coded styling
+    risk_by_year = df.groupby("Signing Year")["Risk Level"].value_counts().unstack().fillna(0)
+    
+    # Stacked bar chart
+    st.markdown("**Stacked Bar Chart of Risk by Year**")
+    st.bar_chart(risk_by_year)
+
+    # Color-coded table
+    st.markdown("**Color-coded Table of Risk by Year**")
     def highlight_risk(val):
         color = ""
         if val.name == "High Risk":
@@ -236,7 +258,7 @@ if uploaded_file:
     st.dataframe(styled_df)
 
     # =====================
-    # SUPPLIER FLAG INSIGHTS
+    # SUPPLIER RISK INSIGHTS
     # =====================
     st.subheader("Supplier Risk Patterns")
     st.write(
