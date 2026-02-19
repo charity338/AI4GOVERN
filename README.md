@@ -63,31 +63,29 @@ Oversight bodies typically rely on manual review and retrospective audits, which
 1. Clone this repository:  
    ```bash
    git clone <your-repo-url>
-Install requirements:
 
+## Installation & Running the App
+
+1. **Install requirements:**  
+```bash
 pip install -r requirements.txt
-Run Streamlit app:
 
+2. **Run Streamlit app:**
 streamlit run app.py
-Upload your CSV dataset and explore the dashboard.
 
-Features
-Metrics: Total contracts, high-risk contracts, total exposure
+3. **Upload your CSV dataset and explore the dashboard.**
 
-Charts: Risk distribution, risk by global practice
 
-Top 10 High-Risk Contracts
+- Step 1 → uses your repo with `app.py`, `requirements.txt`, etc.  
+- Step 2 → ensures all packages like Streamlit and Pandas are installed.  
+- Step 3 → launches the app.  
+- Step 4 → the **sample CSV you provide** is what judges will upload to see the dashboard in action.  
 
-Download high-risk contracts
+**So the judge sees the end product**: interactive metrics, charts, color-coded tables, top 10 high-risk contracts, etc., **without needing to code anything themselves**.  
 
-Color-coded risk table by signing year
+---
 
-Supplier insights (repeat vs unique suppliers)
 
-Expected Impact
-Improve visibility into public spending
-
-Highlight high-risk contracts for early intervention
 
 Support evidence-based governance and oversight decisions
 
