@@ -112,7 +112,6 @@ Oversight bodies typically rely on manual review and retrospective audits, which
 
 Here is a preview of the AI4Govern dashboard in action:
 
-![AI4Govern Dashboard](screenshots/dashboard_screenshot.png)
 
 *The screenshot shows key metrics, risk distribution charts, top high-risk contracts, and the color-coded risk table by signing year.*
 
