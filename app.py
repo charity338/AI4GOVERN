@@ -123,6 +123,17 @@ uploaded_file = st.file_uploader("Upload Procurement Data (CSV)", type=["csv"])
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
 
+     # --- Feature Importance ---
+    st.write("### Feature Importance")
+
+    rf_model = model.named_steps["classifier"]
+    importances = rf_model.feature_importances_
+
+    feature_names = model.named_steps["preprocessor"].get_feature_names_out()
+
+    fig, ax = plt.subplots()
+    ax.barh(feature_names, importances)
+    st.pyplot(fig)
     # =====================
     # DASHBOARD FILTERS
     # =====================
