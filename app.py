@@ -34,10 +34,10 @@ if uploaded_file is not None:
 
     df = pd.read_csv(uploaded_file)
 
-    # Clean column names (remove hidden spaces)
+    # Clean column names
     df.columns = df.columns.str.strip()
 
-    # Standardize column names to match training schema
+    # Rename columns to match training schema
     df.rename(columns={
         "Borrower Country / Economy": "Borrower Country"
     }, inplace=True)
@@ -48,18 +48,18 @@ if uploaded_file is not None:
     # FEATURE ENGINEERING
     # =====================
     try:
-        # Contract signing year
+        # Contract Signing Year
         df["Contract Signing Date"] = pd.to_datetime(
             df["Contract Signing Date"], errors="coerce"
         )
         df["Contract Signing Year"] = df["Contract Signing Date"].dt.year
 
-        # Contract value percentile
+        # Contract Value Percentile
         df["Contract Value Percentile"] = (
             df["Supplier Contract Amount (USD)"].rank(pct=True)
         )
 
-        # Repeat supplier flag
+        # Repeat Supplier Flag
         supplier_counts = df["Supplier"].value_counts()
         df["Repeat Supplier Flag"] = (
             df["Supplier"].map(supplier_counts) > 1
@@ -89,6 +89,15 @@ if uploaded_file is not None:
         st.stop()
 
     # =====================
+    # HANDLE MISSING VALUES
+    # =====================
+    numeric_cols = df.select_dtypes(include=["number"]).columns
+    df[numeric_cols] = df[numeric_cols].fillna(0)
+
+    categorical_cols = df.select_dtypes(include=["object"]).columns
+    df[categorical_cols] = df[categorical_cols].fillna("Unknown")
+
+    # =====================
     # AI PREDICTION
     # =====================
     try:
@@ -101,7 +110,7 @@ if uploaded_file is not None:
         st.success("AI-driven risk analysis completed successfully.")
 
     except Exception as e:
-        st.error("Model prediction failed. Column mismatch likely.")
+        st.error("Model prediction failed.")
         st.write(e)
         st.stop()
 
@@ -160,7 +169,7 @@ if uploaded_file is not None:
         else:
             feature_names = model.feature_names_in_
 
-        fig, ax = plt.subplots(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(10, 6))
         pd.Series(importances, index=feature_names) \
             .sort_values() \
             .plot(kind="barh", ax=ax)
