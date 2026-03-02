@@ -170,9 +170,10 @@ if uploaded_file is not None:
             feature_names = model.feature_names_in_
 
         fig, ax = plt.subplots(figsize=(10, 6))
-        pd.Series(importances, index=feature_names) \
-            .sort_values() \
-            .plot(kind="barh", ax=ax)
+        importances_series = pd.Series(importances, index=feature_names)
+        top_features = importances_series.sort_values(ascending=False).head(15)
+
+        top_features.sort_values().plot(kind="barh", ax=ax)
 
         st.pyplot(fig)
 
