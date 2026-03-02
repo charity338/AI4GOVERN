@@ -37,6 +37,26 @@ if uploaded_file is not None:
     st.subheader("AI Model Prediction Engine")
 
     # =====================
+    # =====================
+# FEATURE ENGINEERING (REQUIRED FOR MODEL)
+# =====================
+
+# Contract Signing Year
+df["Contract Signing Date"] = pd.to_datetime(df["Contract Signing Date"], errors="coerce")
+df["Contract Signing Year"] = df["Contract Signing Date"].dt.year
+
+# Contract Value Percentile
+df["Contract Value Percentile"] = df["Supplier Contract Amount (USD)"].rank(pct=True)
+
+# Repeat Supplier Flag
+supplier_counts = df["Supplier"].value_counts()
+df["Repeat Supplier Flag"] = df["Supplier"].map(supplier_counts) > 1
+
+# Contracts per Borrower Country
+df["Contracts per Borrower Country"] = df.groupby("Borrower Country")["WB Contract Number"].transform("count")
+
+# Contracts per Project Global Practice
+df["Contracts per Project Global Practice"] = df.groupby("Project Global Practice")["WB Contract Number"].transform("count")
     # AI PREDICTIONS
     # =====================
     try:
