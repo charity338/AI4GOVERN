@@ -294,5 +294,7 @@ except Exception as e:
         "unique suppliers may indicate higher risk if combined with high contract values."
     )
     st.dataframe(
-        df.groupby("Supplier")["Repeat Supplier"].agg(["count", "first"]).sort_values(by="count", ascending=False)
-    )
+    df.groupby("Supplier")["Repeat Supplier"]
+    .agg(["count", "first"])
+    .sort_values(by="count", ascending=False)
+)
