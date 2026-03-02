@@ -71,23 +71,19 @@ if uploaded_file is not None:
     # =====================
     # AI PREDICTIONS
     # =====================
-    try:
-        # Filter df to match the features used during training
-        # This prevents "extra column" errors
-        X_input = df[model.feature_names_in_]
-        
-        predictions = model.predict(X_input)
-        probabilities = model.predict_proba(X_input)
+ try:
+    predictions = model.predict(df)
+    probabilities = model.predict_proba(df)
 
-        df["Risk Level"] = predictions
-        df["Risk Confidence"] = probabilities.max(axis=1)
+    df["Risk Level"] = predictions
+    df["Risk Confidence"] = probabilities.max(axis=1)
 
-        st.success("AI-driven risk analysis completed successfully.")
+    st.success("AI-driven risk analysis completed successfully.")
 
-    except Exception as e:
-        st.error("Model prediction failed. This usually happens if columns are missing or named differently.")
-        st.write(e)
-        st.stop()
+except Exception as e:
+    st.error("Model prediction failed.")
+    st.write(e)
+    st.stop()
 
     # =====================
     # DASHBOARD METRICS
