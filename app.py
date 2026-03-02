@@ -31,35 +31,37 @@ except Exception as e:
 uploaded_file = st.file_uploader("Upload Procurement Data (CSV)", type=["csv"])
 
 if uploaded_file is not None:
-
+    # Everything from here down is indented because it only runs after a file is uploaded
     df = pd.read_csv(uploaded_file)
 
     st.subheader("AI Model Prediction Engine")
 
     # =====================
+    # FEATURE ENGINEERING (REQUIRED FOR MODEL)
     # =====================
-# FEATURE ENGINEERING (REQUIRED FOR MODEL)
-# =====================
 
-# Contract Signing Year
-df["Contract Signing Date"] = pd.to_datetime(df["Contract Signing Date"], errors="coerce")
-df["Contract Signing Year"] = df["Contract Signing Date"].dt.year
+    # Contract Signing Year
+    df["Contract Signing Date"] = pd.to_datetime(df["Contract Signing Date"], errors="coerce")
+    df["Contract Signing Year"] = df["Contract Signing Date"].dt.year
 
-# Contract Value Percentile
-df["Contract Value Percentile"] = df["Supplier Contract Amount (USD)"].rank(pct=True)
+    # Contract Value Percentile
+    df["Contract Value Percentile"] = df["Supplier Contract Amount (USD)"].rank(pct=True)
 
-# Repeat Supplier Flag
-supplier_counts = df["Supplier"].value_counts()
-df["Repeat Supplier Flag"] = df["Supplier"].map(supplier_counts) > 1
+    # Repeat Supplier Flag
+    supplier_counts = df["Supplier"].value_counts()
+    df["Repeat Supplier Flag"] = (df["Supplier"].map(supplier_counts) > 1).astype(int)
 
-# Contracts per Borrower Country
-df["Contracts per Borrower Country"] = df.groupby("Borrower Country")["WB Contract Number"].transform("count")
+    # Contracts per Borrower Country
+    df["Contracts per Borrower Country"] = df.groupby("Borrower Country")["WB Contract Number"].transform("count")
 
-# Contracts per Project Global Practice
-df["Contracts per Project Global Practice"] = df.groupby("Project Global Practice")["WB Contract Number"].transform("count")
+    # Contracts per Project Global Practice
+    df["Contracts per Project Global Practice"] = df.groupby("Project Global Practice")["WB Contract Number"].transform("count")
+
+    # =====================
     # AI PREDICTIONS
     # =====================
     try:
+        # NOTE: Ensure 'df' contains ONLY the columns the model was trained on
         predictions = model.predict(df)
         probabilities = model.predict_proba(df)
 
