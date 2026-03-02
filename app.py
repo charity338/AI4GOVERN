@@ -15,7 +15,7 @@ st.write("AI-driven risk analytics for procurement oversight")
 # LOAD TRAINED MODEL
 # =====================
 try:
-    model = joblib.load("ai4govern_pipeline.pkl")
+    model = joblib.load("ai4govern_pipeline(1).pkl")
     st.write("Model loaded successfully.")
 except Exception as e:
     st.error("Model could not be loaded.")
