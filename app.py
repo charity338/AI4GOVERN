@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 # =====================
 import os
-
+st.write(model.feature_names_in_)
 
 # PAGE CONFIG
 # =====================
