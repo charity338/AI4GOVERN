@@ -34,35 +34,54 @@ if uploaded_file is not None:
 
     df = pd.read_csv(uploaded_file)
 
+    # Clean column names (remove hidden spaces)
+    df.columns = df.columns.str.strip()
+
+    # Standardize column names to match training schema
+    df.rename(columns={
+        "Borrower Country / Economy": "Borrower Country"
+    }, inplace=True)
+
     st.subheader("AI Model Prediction Engine")
 
     # =====================
     # FEATURE ENGINEERING
     # =====================
     try:
+        # Contract signing year
         df["Contract Signing Date"] = pd.to_datetime(
             df["Contract Signing Date"], errors="coerce"
         )
         df["Contract Signing Year"] = df["Contract Signing Date"].dt.year
 
+        # Contract value percentile
         df["Contract Value Percentile"] = (
             df["Supplier Contract Amount (USD)"].rank(pct=True)
         )
 
+        # Repeat supplier flag
         supplier_counts = df["Supplier"].value_counts()
         df["Repeat Supplier Flag"] = (
             df["Supplier"].map(supplier_counts) > 1
         ).astype(int)
 
-        df["Contracts per Borrower Country"] = (
-            df.groupby("Borrower Country")["WB Contract Number"]
-            .transform("count")
-        )
+        # Contracts per Borrower Country
+        if "Borrower Country" in df.columns:
+            df["Contracts per Borrower Country"] = (
+                df.groupby("Borrower Country")["WB Contract Number"]
+                .transform("count")
+            )
+        else:
+            df["Contracts per Borrower Country"] = 0
 
-        df["Contracts per Project Global Practice"] = (
-            df.groupby("Project Global Practice")["WB Contract Number"]
-            .transform("count")
-        )
+        # Contracts per Project Global Practice
+        if "Project Global Practice" in df.columns:
+            df["Contracts per Project Global Practice"] = (
+                df.groupby("Project Global Practice")["WB Contract Number"]
+                .transform("count")
+            )
+        else:
+            df["Contracts per Project Global Practice"] = 0
 
     except Exception as e:
         st.error("Feature engineering failed.")
@@ -82,7 +101,7 @@ if uploaded_file is not None:
         st.success("AI-driven risk analysis completed successfully.")
 
     except Exception as e:
-        st.error("Model prediction failed.")
+        st.error("Model prediction failed. Column mismatch likely.")
         st.write(e)
         st.stop()
 
