@@ -1,5 +1,9 @@
 # import streamlit as st
 # import pandas as pd
+# import joblib
+# import matplotlib.pyplot as plt
+
+# model = joblib.load("ai4govern_pipeline.pkl")
 
 # st.set_page_config(page_title="AI4Govern", layout="wide")
 
@@ -106,6 +110,10 @@
 import streamlit as st
 import pandas as pd
 from io import BytesIO
+import joblib
+import matplotlib.pyplot as plt
+
+model = joblib.load("ai4govern_pipeline.pkl")
 
 # =====================
 # PAGE CONFIG
@@ -165,16 +173,25 @@ if uploaded_file:
     # =====================
     # RISK CLASSIFICATION
     # =====================
-    def classify_risk(row):
-        if row["Contract Value Percentile"] >= 75 and not row["Repeat Supplier"]:
-            return "High Risk"
-        elif row["Contract Value Percentile"] < 50 and row["Repeat Supplier"]:
-            return "Low Risk"
-        else:
-            return "Medium Risk"
+  # =====================
+# AI MODEL PREDICTION
+# =====================
 
-    df["Risk Level"] = df.apply(classify_risk, axis=1)
-    st.success("Risk analysis completed.")
+st.subheader("AI Model Prediction Engine")
+
+try:
+    predictions = model.predict(df)
+    probabilities = model.predict_proba(df)
+
+    df["Risk Level"] = predictions
+    df["Risk Confidence"] = probabilities.max(axis=1)
+
+    st.success("AI-driven risk analysis completed using trained ML model.")
+
+except Exception as e:
+    st.error("Model prediction failed. Feature mismatch likely.")
+    st.write(e)
+    st.stop()
 
     # =====================
     # DASHBOARD METRICS
@@ -183,7 +200,7 @@ if uploaded_file:
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Contracts", f"{len(df):,}")
     col2.metric("High Risk Contracts", f"{len(df[df['Risk Level'] == 'High Risk']):,}")
-    col3.metric("Total Financial Exposure (USD)", f"${df['Supplier Contract Amount (USD)'].sum():,.0f}")
+    col3.metric("Average AI Risk Confidence", f"{df['Risk Confidence'].mean():.2f}")
 
     # =====================
     # RISK DISTRIBUTION CHARTS
