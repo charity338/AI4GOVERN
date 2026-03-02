@@ -4,23 +4,43 @@ import joblib
 import matplotlib.pyplot as plt
 
 # =====================
-# PAGE CONFIG
-# =====================
-st.set_page_config(page_title="AI4Govern", layout="wide")
-
-st.title("AI4Govern – Public Procurement Risk Monitor")
-st.write("AI-driven risk analytics for procurement oversight")
+import os
+# import joblib
+# import streamlit as st
 
 # =====================
 # LOAD TRAINED MODEL
 # =====================
+# Get the absolute path to the directory this script is in
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(BASE_DIR, "ai4govern_pipeline(1).pkl")
+
 try:
-    model = joblib.load("ai4govern_pipeline(1).pkl")
+    # Use the absolute path to load the model
+    model = joblib.load(model_path)
     st.write("Model loaded successfully.")
 except Exception as e:
-    st.error("Model could not be loaded.")
+    st.error(f"Model could not be loaded at: {model_path}")
     st.write(e)
     st.stop()
+
+# # PAGE CONFIG
+# # =====================
+# st.set_page_config(page_title="AI4Govern", layout="wide")
+
+# st.title("AI4Govern – Public Procurement Risk Monitor")
+# st.write("AI-driven risk analytics for procurement oversight")
+
+# # =====================
+# # LOAD TRAINED MODEL
+# # =====================
+# try:
+#     model = joblib.load("ai4govern_pipeline(1).pkl")
+#     st.write("Model loaded successfully.")
+# except Exception as e:
+#     st.error("Model could not be loaded.")
+#     st.write(e)
+#     st.stop()
 
 # =====================
 # FILE UPLOAD
