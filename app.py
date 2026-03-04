@@ -33,11 +33,8 @@ uploaded_file = st.file_uploader("Upload Procurement Data (CSV)", type=["csv"])
 if uploaded_file is not None:
 
     df = pd.read_csv(uploaded_file)
-
-    # Clean column names
     df.columns = df.columns.str.strip()
 
-    # Rename columns to match training schema
     df.rename(columns={
         "Borrower Country / Economy": "Borrower Country"
     }, inplace=True)
@@ -48,24 +45,20 @@ if uploaded_file is not None:
     # FEATURE ENGINEERING
     # =====================
     try:
-        # Contract Signing Year
         df["Contract Signing Date"] = pd.to_datetime(
             df["Contract Signing Date"], errors="coerce"
         )
         df["Contract Signing Year"] = df["Contract Signing Date"].dt.year
 
-        # Contract Value Percentile
         df["Contract Value Percentile"] = (
             df["Supplier Contract Amount (USD)"].rank(pct=True)
         )
 
-        # Repeat Supplier Flag
         supplier_counts = df["Supplier"].value_counts()
         df["Repeat Supplier Flag"] = (
             df["Supplier"].map(supplier_counts) > 1
         ).astype(int)
 
-        # Contracts per Borrower Country
         if "Borrower Country" in df.columns:
             df["Contracts per Borrower Country"] = (
                 df.groupby("Borrower Country")["WB Contract Number"]
@@ -74,7 +67,6 @@ if uploaded_file is not None:
         else:
             df["Contracts per Borrower Country"] = 0
 
-        # Contracts per Project Global Practice
         if "Project Global Practice" in df.columns:
             df["Contracts per Project Global Practice"] = (
                 df.groupby("Project Global Practice")["WB Contract Number"]
@@ -105,9 +97,13 @@ if uploaded_file is not None:
         probabilities = model.predict_proba(df)
 
         df["Risk Level"] = predictions
-        df["Risk Confidence"] = probabilities.max(axis=1)
+        df["Risk Confidence"] = probabilities.max(axis=1) * 100  # FIXED
 
         st.success("AI-driven risk analysis completed successfully.")
+
+        # DEBUG: Show label distribution to confirm model outputs
+        st.write("Model Label Distribution:")
+        st.write(df["Risk Level"].value_counts())
 
     except Exception as e:
         st.error("Model prediction failed.")
@@ -119,16 +115,15 @@ if uploaded_file is not None:
     # =====================
     st.markdown("## Key Risk Indicators")
 
+    total_contracts = len(df)
+    high_risk_count = (df["Risk Level"] == "High").sum()
+    avg_confidence = df["Risk Confidence"].mean()
+
     col1, col2, col3 = st.columns(3)
-    col1.metric("Total Contracts", f"{len(df):,}")
-    col2.metric(
-        "High Risk Contracts",
-        f"{len(df[df['Risk Level'] == 'High']):,}",
-    )
-    col3.metric(
-        "Average AI Risk Confidence",
-        f"{df['Risk Confidence'].mean():.2f}",
-    )
+
+    col1.metric("Total Contracts", f"{total_contracts:,}")
+    col2.metric("High Risk Contracts", f"{high_risk_count:,}")
+    col3.metric("Average AI Risk Confidence", f"{avg_confidence:.2f}%")
 
     col1, col2 = st.columns(2)
 
@@ -140,6 +135,9 @@ if uploaded_file is not None:
         st.subheader("Risk Confidence Distribution")
         st.area_chart(df["Risk Confidence"])
 
+    # =====================
+    # TOP HIGH RISK TABLE
+    # =====================
     st.subheader("Top 10 High Risk Contracts")
 
     high_risk_df = (
@@ -162,12 +160,9 @@ if uploaded_file is not None:
         rf_model = model.named_steps["classifier"]
         importances = rf_model.feature_importances_
 
-        if "preprocessor" in model.named_steps:
-            feature_names = model.named_steps[
-                "preprocessor"
-            ].get_feature_names_out()
-        else:
-            feature_names = model.feature_names_in_
+        feature_names = model.named_steps[
+            "preprocessor"
+        ].get_feature_names_out()
 
         fig, ax = plt.subplots(figsize=(10, 6))
         importances_series = pd.Series(importances, index=feature_names)
