@@ -123,7 +123,7 @@ if uploaded_file is not None:
     col1.metric("Total Contracts", f"{len(df):,}")
     col2.metric(
         "High Risk Contracts",
-        f"{len(df[df['Risk Level'] == 'High Risk']):,}",
+        f"{len(df[df['Risk Level'] == 'High']):,}",
     )
     col3.metric(
         "Average AI Risk Confidence",
@@ -143,7 +143,7 @@ if uploaded_file is not None:
     st.subheader("Top 10 High Risk Contracts")
 
     high_risk_df = (
-        df[df["Risk Level"] == "High Risk"]
+        df[df["Risk Level"] == "High"]
         .sort_values(by="Risk Confidence", ascending=False)
         .head(10)
     )
