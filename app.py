@@ -1,10 +1,10 @@
-st.write("VERSION CHECK – Updated Confidence Fix Applied")
-
 import streamlit as st
 import pandas as pd
 import joblib
 import matplotlib.pyplot as plt
 import os
+
+st.write("VERSION CHECK – Updated Confidence Fix Applied")
 
 # =====================
 # PAGE CONFIG
