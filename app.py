@@ -99,6 +99,9 @@ if uploaded_file is not None:
         df["Risk Level"] = predictions
         df["Risk Confidence"] = probabilities.max(axis=1) * 100  # FIXED
 
+        st.write("Sample probabilities:")
+        st.write(probabilities[:5])
+
         st.success("AI-driven risk analysis completed successfully.")
 
         # DEBUG: Show label distribution to confirm model outputs
