@@ -4,13 +4,11 @@ import joblib
 import matplotlib.pyplot as plt
 import os
 
-st.write("VERSION CHECK – Updated Confidence Fix Applied")
-
 # =====================
 # PAGE CONFIG
 # =====================
 st.set_page_config(page_title="AI4Govern", layout="wide")
-
+st.write("VERSION CHECK – Updated Confidence Fix Applied")
 st.title("AI4Govern – Public Procurement Risk Monitor")
 st.write("AI-driven risk analytics for procurement oversight")
 
