@@ -93,17 +93,30 @@ if uploaded_file is not None:
     # AI PREDICTION
     # =====================
     try:
+        # predictions = model.predict(df)
+        # probabilities = model.predict_proba(df)
+
+        # df["Risk Level"] = predictions
+        # df["Risk Confidence"] = probabilities.max(axis=1) * 100  # FIXED
+
+        # st.write("Sample probabilities:")
+        # st.write(probabilities[:5])
+
+        # st.success("AI-driven risk analysis completed successfully.")
         predictions = model.predict(df)
         probabilities = model.predict_proba(df)
 
-        df["Risk Level"] = predictions
-        df["Risk Confidence"] = probabilities.max(axis=1) * 100  # FIXED
-
-        st.write("Sample probabilities:")
+        st.write("Probability shape:", probabilities.shape)
+        st.write("First 5 probability rows:")
         st.write(probabilities[:5])
 
-        st.success("AI-driven risk analysis completed successfully.")
+        df["Risk Level"] = predictions
+        df["Risk Confidence"] = probabilities.max(axis=1)
 
+        st.write("First 5 confidence values:")
+        st.write(df["Risk Confidence"].head())
+        st.write("Mean confidence raw:", df["Risk Confidence"].mean())    
+        st.success("AI-driven risk analysis completed successfully.")
         # DEBUG: Show label distribution to confirm model outputs
         st.write("Model Label Distribution:")
         st.write(df["Risk Level"].value_counts())
