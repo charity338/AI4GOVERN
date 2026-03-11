@@ -31,15 +31,13 @@ except Exception as e:
 uploaded_file = st.file_uploader("Upload Procurement Data (CSV)", type=["csv"])
 
 if uploaded_file is not None:
+
     # =====================
     # LOAD DATA
     # =====================
     df = pd.read_csv(uploaded_file)
     df.columns = df.columns.str.strip()
-
-    df.rename(columns={
-        "Borrower Country / Economy": "Borrower Country"
-    }, inplace=True)
+    df.rename(columns={"Borrower Country / Economy": "Borrower Country"}, inplace=True)
 
     st.subheader("AI Model Prediction Engine")
 
@@ -47,35 +45,15 @@ if uploaded_file is not None:
     # FEATURE ENGINEERING
     # =====================
     try:
-        df["Contract Signing Date"] = pd.to_datetime(
-            df["Contract Signing Date"], errors="coerce"
-        )
+        df["Contract Signing Date"] = pd.to_datetime(df["Contract Signing Date"], errors="coerce")
         df["Contract Signing Year"] = df["Contract Signing Date"].dt.year
-
-        df["Contract Value Percentile"] = (
-            df["Supplier Contract Amount (USD)"].rank(pct=True)
-        )
+        df["Contract Value Percentile"] = df["Supplier Contract Amount (USD)"].rank(pct=True)
 
         supplier_counts = df["Supplier"].value_counts()
-        df["Repeat Supplier Flag"] = (
-            df["Supplier"].map(supplier_counts) > 1
-        ).astype(int)
+        df["Repeat Supplier Flag"] = (df["Supplier"].map(supplier_counts) > 1).astype(int)
 
-        if "Borrower Country" in df.columns:
-            df["Contracts per Borrower Country"] = (
-                df.groupby("Borrower Country")["WB Contract Number"]
-                .transform("count")
-            )
-        else:
-            df["Contracts per Borrower Country"] = 0
-
-        if "Project Global Practice" in df.columns:
-            df["Contracts per Project Global Practice"] = (
-                df.groupby("Project Global Practice")["WB Contract Number"]
-                .transform("count")
-            )
-        else:
-            df["Contracts per Project Global Practice"] = 0
+        df["Contracts per Borrower Country"] = df.groupby("Borrower Country")["WB Contract Number"].transform("count") if "Borrower Country" in df.columns else 0
+        df["Contracts per Project Global Practice"] = df.groupby("Project Global Practice")["WB Contract Number"].transform("count") if "Project Global Practice" in df.columns else 0
 
     except Exception as e:
         st.error("Feature engineering failed.")
@@ -98,22 +76,16 @@ if uploaded_file is not None:
         predictions = model.predict(df)
         probabilities = model.predict_proba(df)
 
-        st.write("Probability shape:", probabilities.shape)
-        st.write("First 5 probability rows:")
-        st.write(probabilities[:5])
-
         df["Risk Level"] = predictions
         df["Risk Confidence"] = probabilities.max(axis=1)
 
-        # Normalize confidence if model outputs >1
+        # Normalize if model outputs >1
         if df["Risk Confidence"].max() > 1:
             df["Risk Confidence"] = df["Risk Confidence"] / df["Risk Confidence"].max()
 
-        # Debug outputs
         st.write("First 5 confidence values:")
         st.write(df["Risk Confidence"].head())
         st.write("Mean confidence raw:", df["Risk Confidence"].mean())
-
         st.success("AI-driven risk analysis completed successfully.")
         st.write("Model Label Distribution:")
         st.write(df["Risk Level"].value_counts())
@@ -127,7 +99,6 @@ if uploaded_file is not None:
     # DASHBOARD
     # =====================
     st.markdown("## Key Risk Indicators")
-
     total_contracts = len(df)
     high_risk_count = (df["Risk Level"] == "High").sum()
     avg_confidence = df["Risk Confidence"].mean()
@@ -149,11 +120,7 @@ if uploaded_file is not None:
     # TOP HIGH RISK TABLE
     # =====================
     st.subheader("Top 10 High Risk Contracts")
-    high_risk_df = (
-        df[df["Risk Level"] == "High"]
-        .sort_values(by="Risk Confidence", ascending=False)
-        .head(10)
-    )
+    high_risk_df = df[df["Risk Level"] == "High"].sort_values(by="Risk Confidence", ascending=False).head(10)
     if not high_risk_df.empty:
         st.dataframe(high_risk_df)
     else:
