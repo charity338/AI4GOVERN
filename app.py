@@ -31,7 +31,9 @@ except Exception as e:
 uploaded_file = st.file_uploader("Upload Procurement Data (CSV)", type=["csv"])
 
 if uploaded_file is not None:
-
+    # =====================
+    # LOAD DATA
+    # =====================
     df = pd.read_csv(uploaded_file)
     df.columns = df.columns.str.strip()
 
@@ -92,40 +94,34 @@ if uploaded_file is not None:
     # =====================
     # AI PREDICTION
     # =====================
- # =====================
-# AI PREDICTION
-# =====================
-try:
-    # Get predictions and probabilities
-    predictions = model.predict(df)
-    probabilities = model.predict_proba(df)
+    try:
+        predictions = model.predict(df)
+        probabilities = model.predict_proba(df)
 
-    st.write("Probability shape:", probabilities.shape)
-    st.write("First 5 probability rows:")
-    st.write(probabilities[:5])
+        st.write("Probability shape:", probabilities.shape)
+        st.write("First 5 probability rows:")
+        st.write(probabilities[:5])
 
-    df["Risk Level"] = predictions
-    df["Risk Confidence"] = probabilities.max(axis=1)
+        df["Risk Level"] = predictions
+        df["Risk Confidence"] = probabilities.max(axis=1)
 
-    # Ensure values are in probability range (if model outputs scores >1)
-    if df["Risk Confidence"].max() > 1:
-        df["Risk Confidence"] = df["Risk Confidence"] / df["Risk Confidence"].max()
+        # Normalize confidence if model outputs >1
+        if df["Risk Confidence"].max() > 1:
+            df["Risk Confidence"] = df["Risk Confidence"] / df["Risk Confidence"].max()
 
-    # Debug outputs
-    st.write("First 5 confidence values:")
-    st.write(df["Risk Confidence"].head())
-    st.write("Mean confidence raw:", df["Risk Confidence"].mean())
+        # Debug outputs
+        st.write("First 5 confidence values:")
+        st.write(df["Risk Confidence"].head())
+        st.write("Mean confidence raw:", df["Risk Confidence"].mean())
 
-    st.success("AI-driven risk analysis completed successfully.")
+        st.success("AI-driven risk analysis completed successfully.")
+        st.write("Model Label Distribution:")
+        st.write(df["Risk Level"].value_counts())
 
-    # DEBUG: Show label distribution to confirm model outputs
-    st.write("Model Label Distribution:")
-    st.write(df["Risk Level"].value_counts())
-
-except Exception as e:
-    st.error("Model prediction failed.")
-    st.write(e)
-    st.stop()
+    except Exception as e:
+        st.error("Model prediction failed.")
+        st.write(e)
+        st.stop()
 
     # =====================
     # DASHBOARD
@@ -137,17 +133,14 @@ except Exception as e:
     avg_confidence = df["Risk Confidence"].mean()
 
     col1, col2, col3 = st.columns(3)
-
     col1.metric("Total Contracts", f"{total_contracts:,}")
     col2.metric("High Risk Contracts", f"{high_risk_count:,}")
     col3.metric("Average AI Risk Confidence Score", f"{avg_confidence:.2f}")
 
     col1, col2 = st.columns(2)
-
     with col1:
         st.subheader("Risk Distribution")
         st.bar_chart(df["Risk Level"].value_counts())
-
     with col2:
         st.subheader("Risk Confidence Distribution")
         st.area_chart(df["Risk Confidence"] * 100)
@@ -156,13 +149,11 @@ except Exception as e:
     # TOP HIGH RISK TABLE
     # =====================
     st.subheader("Top 10 High Risk Contracts")
-
     high_risk_df = (
         df[df["Risk Level"] == "High"]
         .sort_values(by="Risk Confidence", ascending=False)
         .head(10)
     )
-
     if not high_risk_df.empty:
         st.dataframe(high_risk_df)
     else:
@@ -172,22 +163,19 @@ except Exception as e:
     # FEATURE IMPORTANCE
     # =====================
     st.subheader("Feature Importance")
-
     try:
         rf_model = model.named_steps["classifier"]
         importances = rf_model.feature_importances_
-
-        feature_names = model.named_steps[
-            "preprocessor"
-        ].get_feature_names_out()
+        feature_names = model.named_steps["preprocessor"].get_feature_names_out()
 
         fig, ax = plt.subplots(figsize=(10, 6))
         importances_series = pd.Series(importances, index=feature_names)
         top_features = importances_series.sort_values(ascending=False).head(15)
-
         top_features.sort_values().plot(kind="barh", ax=ax)
-
         st.pyplot(fig)
 
     except Exception:
         st.info("Feature importance not available.")
+
+else:
+    st.info("Please upload a CSV file to run AI4Govern predictions.")
