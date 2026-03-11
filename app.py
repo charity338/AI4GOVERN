@@ -92,43 +92,40 @@ if uploaded_file is not None:
     # =====================
     # AI PREDICTION
     # =====================
-    try:
-        # predictions = model.predict(df)
-        # probabilities = model.predict_proba(df)
+ # =====================
+# AI PREDICTION
+# =====================
+try:
+    # Get predictions and probabilities
+    predictions = model.predict(df)
+    probabilities = model.predict_proba(df)
 
-        # df["Risk Level"] = predictions
-        # df["Risk Confidence"] = probabilities.max(axis=1) * 100  # FIXED
+    st.write("Probability shape:", probabilities.shape)
+    st.write("First 5 probability rows:")
+    st.write(probabilities[:5])
 
-        # st.write("Sample probabilities:")
-        # st.write(probabilities[:5])
+    df["Risk Level"] = predictions
+    df["Risk Confidence"] = probabilities.max(axis=1)
 
-        # st.success("AI-driven risk analysis completed successfully.")
-        predictions = model.predict(df)
-        probabilities = model.predict_proba(df)
-
-        st.write("Probability shape:", probabilities.shape)
-        st.write("First 5 probability rows:")
-        st.write(probabilities[:5])
-
-        df["Risk Level"] = predictions
-        df["Risk Confidence"] = probabilities.max(axis=1)
-
-        # Ensure values are in probability range
+    # Ensure values are in probability range (if model outputs scores >1)
     if df["Risk Confidence"].max() > 1:
         df["Risk Confidence"] = df["Risk Confidence"] / df["Risk Confidence"].max()
 
-        st.write("First 5 confidence values:")
-        st.write(df["Risk Confidence"].head())
-        st.write("Mean confidence raw:", df["Risk Confidence"].mean())    
-        st.success("AI-driven risk analysis completed successfully.")
-        # DEBUG: Show label distribution to confirm model outputs
-        st.write("Model Label Distribution:")
-        st.write(df["Risk Level"].value_counts())
+    # Debug outputs
+    st.write("First 5 confidence values:")
+    st.write(df["Risk Confidence"].head())
+    st.write("Mean confidence raw:", df["Risk Confidence"].mean())
 
-    except Exception as e:
-        st.error("Model prediction failed.")
-        st.write(e)
-        st.stop()
+    st.success("AI-driven risk analysis completed successfully.")
+
+    # DEBUG: Show label distribution to confirm model outputs
+    st.write("Model Label Distribution:")
+    st.write(df["Risk Level"].value_counts())
+
+except Exception as e:
+    st.error("Model prediction failed.")
+    st.write(e)
+    st.stop()
 
     # =====================
     # DASHBOARD
