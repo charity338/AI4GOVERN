@@ -114,7 +114,7 @@ if uploaded_file is not None:
         df["Risk Confidence"] = probabilities.max(axis=1)
 
         # Ensure values are in probability range
-        if df["Risk Confidence"].max() > 1:
+    if df["Risk Confidence"].max() > 1:
         df["Risk Confidence"] = df["Risk Confidence"] / df["Risk Confidence"].max()
 
         st.write("First 5 confidence values:")
