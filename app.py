@@ -90,6 +90,7 @@ if uploaded_file is not None:
         st.write("Model Label Distribution:")
         st.write(df["Risk Level"].value_counts())
         st.write(df[["WB Contract Number", "Risk Confidence", "Risk Level"]].head(15))
+        st.write("Model classes:", model.classes_)
 
     except Exception as e:
         st.error("Model prediction failed.")
