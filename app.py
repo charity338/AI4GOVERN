@@ -139,7 +139,7 @@ if uploaded_file is not None:
 
     col1.metric("Total Contracts", f"{total_contracts:,}")
     col2.metric("High Risk Contracts", f"{high_risk_count:,}")
-    col3.metric("Average AI Risk Confidence", f"{avg_confidence:.2f}%")
+    col3.metric("Average AI Risk Confidence", f"{avg_confidence*100:.2f}%")
 
     col1, col2 = st.columns(2)
 
@@ -149,7 +149,7 @@ if uploaded_file is not None:
 
     with col2:
         st.subheader("Risk Confidence Distribution")
-        st.area_chart(df["Risk Confidence"])
+        st.area_chart(df["Risk Confidence"] * 100)
 
     # =====================
     # TOP HIGH RISK TABLE
