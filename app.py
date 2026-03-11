@@ -89,6 +89,7 @@ if uploaded_file is not None:
         st.success("AI-driven risk analysis completed successfully.")
         st.write("Model Label Distribution:")
         st.write(df["Risk Level"].value_counts())
+        st.write(df[["WB Contract Number", "Risk Confidence", "Risk Level"]].head(15))
 
     except Exception as e:
         st.error("Model prediction failed.")
