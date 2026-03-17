@@ -118,6 +118,23 @@ if uploaded_file is not None:
     col3.metric("Average AI Risk Confidence Score", f"{avg_confidence:.2f}")
     col4.metric("Model Accuracy", f"{model_accuracy*100:.2f}%")
 
+    # =====================
+# RISK ALERT SYSTEM
+# =====================
+
+    st.markdown("## AI Risk Alerts")
+
+    high_risk_ratio = high_risk_count / total_contracts if total_contracts > 0 else 0
+
+    if high_risk_ratio > 0.3:
+        st.error("🚨 High procurement risk detected! Immediate review recommended.")
+
+    elif high_risk_ratio > 0.1:
+        st.warning("⚠️ Moderate risk levels detected. Monitor contracts closely.")
+
+    else:
+        st.success("✅ Low risk environment. Procurement activities appear stable.")
+
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Risk Distribution")
