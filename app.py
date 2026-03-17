@@ -135,6 +135,8 @@ if uploaded_file is not None:
     else:
         st.success("✅ Low risk environment. Procurement activities appear stable.")
 
+    st.write(f"High Risk Ratio: {high_risk_ratio*100:.2f}%")
+
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Risk Distribution")
