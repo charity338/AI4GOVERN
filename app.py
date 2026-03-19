@@ -52,8 +52,15 @@ if uploaded_file is not None:
         supplier_counts = df["Supplier"].value_counts()
         df["Repeat Supplier Flag"] = (df["Supplier"].map(supplier_counts) > 1).astype(int)
 
-        df["Contracts per Borrower Country"] = df.groupby("Borrower Country")["WB Contract Number"].transform("count") if "Borrower Country" in df.columns else 0
-        df["Contracts per Project Global Practice"] = df.groupby("Project Global Practice")["WB Contract Number"].transform("count") if "Project Global Practice" in df.columns else 0
+        if "Borrower Country" in df.columns:
+            df["Contracts per Borrower Country"] = df.groupby("Borrower Country")["WB Contract Number"].transform("count")
+        else:
+            df["Contracts per Borrower Country"] = 0
+
+        if "Project Global Practice" in df.columns:
+            df["Contracts per Project Global Practice"] = df.groupby("Project Global Practice")["WB Contract Number"].transform("count")
+        else:
+            df["Contracts per Project Global Practice"] = 0
 
     except Exception as e:
         st.error("Feature engineering failed.")
@@ -79,18 +86,10 @@ if uploaded_file is not None:
         df["Risk Level"] = predictions
         df["Risk Confidence"] = probabilities.max(axis=1)
 
-        # Normalize if model outputs >1
         if df["Risk Confidence"].max() > 1:
             df["Risk Confidence"] = df["Risk Confidence"] / df["Risk Confidence"].max()
 
-        st.write("First 5 confidence values:")
-        st.write(df["Risk Confidence"].head())
-        st.write("Mean confidence raw:", df["Risk Confidence"].mean())
         st.success("AI-driven risk analysis completed successfully.")
-        st.write("Model Label Distribution:")
-        st.write(df["Risk Level"].value_counts())
-        st.write(df[["WB Contract Number", "Risk Confidence", "Risk Level"]].head(15))
-        st.write("Model classes:", model.classes_)
 
     except Exception as e:
         st.error("Model prediction failed.")
@@ -100,13 +99,10 @@ if uploaded_file is not None:
     # =====================
     # DASHBOARD
     # =====================
-    # =====================
-# DASHBOARD
-# =====================
-
     model_accuracy = 0.98
 
     st.markdown("## Key Risk Indicators")
+
     total_contracts = len(df)
     high_risk_count = (df["Risk Level"] == "High").sum()
     avg_confidence = df["Risk Confidence"].mean()
@@ -119,69 +115,70 @@ if uploaded_file is not None:
     col4.metric("Model Accuracy", f"{model_accuracy*100:.2f}%")
 
     # =====================
-# RISK ALERT SYSTEM
-# =====================
-
+    # RISK ALERT SYSTEM
+    # =====================
     st.markdown("## AI Risk Alerts")
 
     high_risk_ratio = high_risk_count / total_contracts if total_contracts > 0 else 0
 
     if high_risk_ratio > 0.3:
         st.error("🚨 High procurement risk detected! Immediate review recommended.")
-
     elif high_risk_ratio > 0.1:
         st.warning("⚠️ Moderate risk levels detected. Monitor contracts closely.")
-
     else:
         st.success("✅ Low risk environment. Procurement activities appear stable.")
 
     st.write(f"High Risk Ratio: {high_risk_ratio*100:.2f}%")
 
+    # =====================
+    # CHARTS
+    # =====================
     col1, col2 = st.columns(2)
+
     with col1:
         st.subheader("Risk Distribution")
         st.bar_chart(df["Risk Level"].value_counts())
+
     with col2:
         st.subheader("Risk Confidence Distribution")
         st.area_chart(df["Risk Confidence"] * 100)
 
     # =====================
-    # TOP HIGH RISK TABLE
+    # TOP HIGH RISK CONTRACTS
     # =====================
     st.subheader("Top 10 High Risk Contracts")
+
     high_risk_df = df[df["Risk Level"] == "High"].sort_values(by="Risk Confidence", ascending=False).head(10)
+
     if not high_risk_df.empty:
         st.dataframe(high_risk_df)
     else:
         st.info("No High Risk contracts found.")
 
     # =====================
-# TOP SUSPICIOUS SUPPLIERS
-# =====================
-
+    # TOP SUSPICIOUS SUPPLIERS
+    # =====================
     st.subheader("Top Suspicious Suppliers")
 
     if not df.empty:
 
-    # Focus on higher risk contracts (adjust if no "High")
-    risk_df = df[df["Risk Confidence"] > 0.6]
+        risk_df = df[df["Risk Confidence"] > 0.6]
 
-    supplier_risk = (
-        risk_df.groupby("Supplier")
-        .agg(
-            Total_Contracts=("WB Contract Number", "count"),
-            Avg_Risk=("Risk Confidence", "mean")
+        supplier_risk = (
+            risk_df.groupby("Supplier")
+            .agg(
+                Total_Contracts=("WB Contract Number", "count"),
+                Avg_Risk=("Risk Confidence", "mean")
+            )
+            .reset_index()
         )
-        .reset_index()
-    )
 
-    # Sort by highest risk
-    supplier_risk = supplier_risk.sort_values(by="Avg_Risk", ascending=False).head(10)
+        supplier_risk = supplier_risk.sort_values(by="Avg_Risk", ascending=False).head(10)
 
-    if not supplier_risk.empty:
-        st.dataframe(supplier_risk)
+        if not supplier_risk.empty:
+            st.dataframe(supplier_risk)
         else:
-        st.info("No high-risk suppliers identified.")
+            st.info("No high-risk suppliers identified.")
 
     else:
         st.info("No data available.")
@@ -190,6 +187,7 @@ if uploaded_file is not None:
     # FEATURE IMPORTANCE
     # =====================
     st.subheader("Feature Importance")
+
     try:
         rf_model = model.named_steps["classifier"]
         importances = rf_model.feature_importances_
@@ -198,6 +196,7 @@ if uploaded_file is not None:
         fig, ax = plt.subplots(figsize=(10, 6))
         importances_series = pd.Series(importances, index=feature_names)
         top_features = importances_series.sort_values(ascending=False).head(15)
+
         top_features.sort_values().plot(kind="barh", ax=ax)
         st.pyplot(fig)
 
