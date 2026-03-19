@@ -8,7 +8,6 @@ import os
 # PAGE CONFIG
 # =====================
 st.set_page_config(page_title="AI4Govern", layout="wide")
-st.write("VERSION CHECK – Updated Confidence Fix Applied")
 st.title("AI4Govern – Public Procurement Risk Monitor")
 st.write("AI-driven risk analytics for procurement oversight")
 
@@ -47,6 +46,7 @@ if uploaded_file is not None:
     try:
         df["Contract Signing Date"] = pd.to_datetime(df["Contract Signing Date"], errors="coerce")
         df["Contract Signing Year"] = df["Contract Signing Date"].dt.year
+
         df["Contract Value Percentile"] = df["Supplier Contract Amount (USD)"].rank(pct=True)
 
         supplier_counts = df["Supplier"].value_counts()
@@ -111,7 +111,7 @@ if uploaded_file is not None:
 
     col1.metric("Total Contracts", f"{total_contracts:,}")
     col2.metric("High Risk Contracts", f"{high_risk_count:,}")
-    col3.metric("Average AI Risk Confidence Score", f"{avg_confidence:.2f}")
+    col3.metric("Average AI Confidence", f"{avg_confidence:.2f}")
     col4.metric("Model Accuracy", f"{model_accuracy*100:.2f}%")
 
     # =====================
@@ -160,44 +160,54 @@ if uploaded_file is not None:
     # =====================
     st.subheader("Top Suspicious Suppliers")
 
-    if not df.empty:
+    risk_df = df[df["Risk Confidence"] > 0.6]
 
-        risk_df = df[df["Risk Confidence"] > 0.6]
-
-        supplier_risk = (
-            risk_df.groupby("Supplier")
-            .agg(
-                Total_Contracts=("WB Contract Number", "count"),
-                Avg_Risk=("Risk Confidence", "mean")
-            )
-            .reset_index()
+    supplier_risk = (
+        risk_df.groupby("Supplier")
+        .agg(
+            Total_Contracts=("WB Contract Number", "count"),
+            Avg_Risk=("Risk Confidence", "mean")
         )
+        .reset_index()
+    )
 
-        supplier_risk = supplier_risk.sort_values(by="Avg_Risk", ascending=False).head(10)
+    supplier_risk = supplier_risk.sort_values(by="Avg_Risk", ascending=False).head(10)
 
-        if not supplier_risk.empty:
-            st.dataframe(supplier_risk)
-        else:
-            st.info("No high-risk suppliers identified.")
-
+    if not supplier_risk.empty:
+        st.dataframe(supplier_risk)
     else:
-        st.info("No data available.")
+        st.info("No high-risk suppliers identified.")
 
     # =====================
-    # FEATURE IMPORTANCE
+    # EXPLAINABLE AI (🔥)
     # =====================
-    st.subheader("Feature Importance")
+    st.subheader("Why is a Contract Risky?")
 
     try:
+        st.write("Top factors influencing risk prediction:")
+
         rf_model = model.named_steps["classifier"]
         importances = rf_model.feature_importances_
         feature_names = model.named_steps["preprocessor"].get_feature_names_out()
 
-        fig, ax = plt.subplots(figsize=(10, 6))
-        importances_series = pd.Series(importances, index=feature_names)
-        top_features = importances_series.sort_values(ascending=False).head(15)
+        importance_df = pd.DataFrame({
+            "Feature": feature_names,
+            "Importance": importances
+        }).sort_values(by="Importance", ascending=False).head(5)
 
-        top_features.sort_values().plot(kind="barh", ax=ax)
+        st.dataframe(importance_df)
+
+    except Exception:
+        st.info("Explainability not available.")
+
+    # =====================
+    # FEATURE IMPORTANCE GRAPH
+    # =====================
+    st.subheader("Feature Importance")
+
+    try:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        importance_df.set_index("Feature")["Importance"].sort_values().plot(kind="barh", ax=ax)
         st.pyplot(fig)
 
     except Exception:
