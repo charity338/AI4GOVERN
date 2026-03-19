@@ -159,9 +159,9 @@ if uploaded_file is not None:
 # TOP SUSPICIOUS SUPPLIERS
 # =====================
 
-st.subheader("Top Suspicious Suppliers")
+    st.subheader("Top Suspicious Suppliers")
 
-if not df.empty:
+    if not df.empty:
 
     # Focus on higher risk contracts (adjust if no "High")
     risk_df = df[df["Risk Confidence"] > 0.6]
@@ -180,11 +180,11 @@ if not df.empty:
 
     if not supplier_risk.empty:
         st.dataframe(supplier_risk)
-    else:
+        else:
         st.info("No high-risk suppliers identified.")
 
-else:
-    st.info("No data available.")
+    else:
+        st.info("No data available.")
 
     # =====================
     # FEATURE IMPORTANCE
