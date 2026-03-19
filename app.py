@@ -156,6 +156,37 @@ if uploaded_file is not None:
         st.info("No High Risk contracts found.")
 
     # =====================
+# TOP SUSPICIOUS SUPPLIERS
+# =====================
+
+st.subheader("Top Suspicious Suppliers")
+
+if not df.empty:
+
+    # Focus on higher risk contracts (adjust if no "High")
+    risk_df = df[df["Risk Confidence"] > 0.6]
+
+    supplier_risk = (
+        risk_df.groupby("Supplier")
+        .agg(
+            Total_Contracts=("WB Contract Number", "count"),
+            Avg_Risk=("Risk Confidence", "mean")
+        )
+        .reset_index()
+    )
+
+    # Sort by highest risk
+    supplier_risk = supplier_risk.sort_values(by="Avg_Risk", ascending=False).head(10)
+
+    if not supplier_risk.empty:
+        st.dataframe(supplier_risk)
+    else:
+        st.info("No high-risk suppliers identified.")
+
+else:
+    st.info("No data available.")
+
+    # =====================
     # FEATURE IMPORTANCE
     # =====================
     st.subheader("Feature Importance")
